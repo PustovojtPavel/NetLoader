@@ -1,6 +1,7 @@
 package org.example;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.download.DownloadTask;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -10,6 +11,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -22,8 +24,10 @@ public class Application {
             return;
         }
 
+        ConcurrentLinkedQueue<DownloadTask> taskQueue = null;
+
         try {
-            createTaskQueueFrom(
+            taskQueue = createTaskQueueFrom(
                 getLinkListFrom(settings.getFileName()));
         } catch (NoSuchFileException e) {
             log.error("File {} not found", settings.getFileName());
@@ -33,9 +37,17 @@ public class Application {
         }
     }
 
-    private static void createTaskQueueFrom(List<String> linkListFrom) {
-
+    private static ConcurrentLinkedQueue<DownloadTask> createTaskQueueFrom(List<String> linkList) {
+        ConcurrentLinkedQueue<DownloadTask> tasks =
+            new ConcurrentLinkedQueue<>();
+        linkList.forEach((k)->{
+            DownloadTask task  = new DownloadTask();
+            task.setLink(k);
+            tasks.add(task);
+        });
+        return tasks;
     }
+
     private static List<String> getLinkListFrom(String fileName) throws IOException {
         List<String> linkList = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
