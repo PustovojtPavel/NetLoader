@@ -32,9 +32,9 @@ public class Application {
         try {
             downloadList = createURIListFrom(settings.getFileName());
         } catch (NoSuchFileException e) {
-            log.error("File {} not found", settings.getFileName());
+            log.info("File {} not found", settings.getFileName());
         } catch (IOException e) {
-            log.error("Error read file {}", settings.getFileName());
+            log.info("Error read file {}", settings.getFileName());
         }
 
         if (null == downloadList) {
