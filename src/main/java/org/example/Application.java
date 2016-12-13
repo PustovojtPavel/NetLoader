@@ -54,7 +54,7 @@ public class Application {
         List<Callable<Object>> tasks = new ArrayList<>(uriList.size());
         try (Stream<URI> stream = uriList.stream()) {
             stream.forEach((k)->{
-                tasks.add(new DownloadTask(k));
+                tasks.add(new DownloadTask(k, downloadPath));
             });
         }
 
@@ -76,7 +76,7 @@ public class Application {
     }
 
     private static String getTempDirectory() {
-        return "c:/tmp";
+        return "c:/tmp/2/";
     }
 
     private static List<URI> createURIListFrom(String fileName) throws IOException {
