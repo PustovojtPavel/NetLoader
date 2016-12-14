@@ -4,8 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileOutputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -22,15 +27,33 @@ public class DownloadTask implements Callable<Object> {
 
     @Override
     public Object call() throws Exception {
-        log.info("Start download uri={} ", uri);
-        try (ReadableByteChannel rbc = Channels.newChannel(uri.toURL().openStream());
+
+        URL url = uri.toURL();
+        Instant start = Instant.now();
+
+        log.info("[{}] Start download", url);
+
+        try (ReadableByteChannel rbc = Channels.newChannel(url.openStream());
                 FileOutputStream fos = new FileOutputStream(generateFileName())) {
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
         } catch (Throwable t) {
             log.info("Error occur", t);
         }
-        log.info("Finish download");
+
+        log.info("[{}] Finish download, elapsed time: {}", url,
+            localTimeToString(
+                getElapsedLocalTime(start, Instant.now())));
         return null;
+    }
+
+    private String localTimeToString(LocalTime time) {
+        DateTimeFormatter df = DateTimeFormatter.ISO_LOCAL_TIME;
+        return time.format(df);
+    }
+
+    private LocalTime getElapsedLocalTime(Instant start, Instant end) {
+        return LocalTime.ofNanoOfDay(
+            Duration.between(start, end).getNano());
     }
 
     private String generateFileName() {
